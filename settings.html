@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SimplyComment Settings</title>
+  <style>
+    body {
+      margin: 0;
+      max-width: 760px;
+      padding: 24px;
+      background: #0c0d10;
+      color: #eef0f4;
+      font: 14px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    h1 { margin-bottom: 4px; }
+    p { color: #8b919c; margin: 0 0 16px; }
+    label {
+      display: block;
+      margin: 14px 0 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: #8b919c;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: #13151a;
+      color: #eef0f4;
+      font: inherit;
+      box-sizing: border-box;
+      outline: none;
+    }
+    textarea { min-height: 92px; resize: vertical; }
+    input:focus, textarea:focus { border-color: #0a66c2; box-shadow: 0 0 0 1px rgba(10,102,194,.25); }
+    .row { display: flex; gap: 10px; align-items: center; margin-top: 18px; }
+    button {
+      border: none;
+      border-radius: 9px;
+      background: #0a66c2;
+      color: #fff;
+      padding: 10px 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:hover { background: #004182; }
+    #status { color: #5ecf9a; min-height: 20px; }
+  </style>
+</head>
+<body>
+  <h1>SimplyComment Settings</h1>
+  <p>Profile and API live here so the popup stays fast and clean.</p>
+
+  <label for="apiKey">OpenAI API key</label>
+  <input id="apiKey" type="password" placeholder="sk-..." autocomplete="off" />
+
+  <label for="profileName">Name (optional)</label>
+  <input id="profileName" type="text" placeholder="How you sign comments" />
+
+  <label for="profileRole">Role / industry (optional)</label>
+  <input id="profileRole" type="text" placeholder="e.g. Product manager, fintech" />
+
+  <label for="profileTone">Tone notes (optional)</label>
+  <input id="profileTone" type="text" placeholder="e.g. warm, concise, practical" />
+
+  <label for="profileComments">Your comments (4 to 6, separated by blank lines)</label>
+  <textarea id="profileComments" placeholder="Paste real comments you wrote."></textarea>
+
+  <label for="profilePosts">Your posts (optional)</label>
+  <textarea id="profilePosts" placeholder="Optional voice context."></textarea>
+
+  <div class="row">
+    <button id="save">Save settings</button>
+    <div id="status"></div>
+  </div>
+
+  <script src="settings.js"></script>
+</body>
+</html>

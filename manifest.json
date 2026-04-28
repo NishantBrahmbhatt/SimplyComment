@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "SimplyComment",
+  "description": "Paste a post and your angle: one sentence in your voice (OpenAI). No page reading.",
+  "version": "0.3.6",
+  "permissions": ["storage"],
+  "host_permissions": ["https://api.openai.com/*"],
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "options_page": "settings.html"
+}
