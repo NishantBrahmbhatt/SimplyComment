@@ -27,6 +27,7 @@
       --text2: #888;
       --text3: #444;
       --border: rgba(255,255,255,0.07);
+      --setup-accent: #d8564e;
     }
 
     html { scroll-behavior: smooth; }
@@ -147,6 +148,13 @@
       margin-bottom: 32px;
       letter-spacing: 0.04em;
       text-transform: uppercase;
+      text-decoration: none;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .hero-badge:hover {
+      color: var(--text);
+      border-color: rgba(255, 255, 255, 0.2);
     }
 
     h1 {
@@ -372,6 +380,113 @@
 
     .step p { font-size: 14px; color: var(--text2); line-height: 1.6; }
 
+    /* ── Setup ── */
+    .setup-section {
+      padding-top: 40px;
+      padding-bottom: 80px;
+    }
+
+    .setup-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--setup-accent);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 20px;
+    }
+
+    .setup-section h2.setup-heading {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
+
+    .setup-intro {
+      font-size: 16px;
+      color: var(--text2);
+      max-width: 520px;
+      line-height: 1.7;
+      margin-bottom: 48px;
+      font-weight: 300;
+    }
+
+    .setup-timeline {
+      list-style: none;
+      margin: 0;
+      padding: 0 0 0 4px;
+      position: relative;
+      max-width: 640px;
+    }
+
+    .setup-timeline::before {
+      content: '';
+      position: absolute;
+      left: 15px;
+      top: 20px;
+      bottom: 20px;
+      width: 1px;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .setup-step {
+      position: relative;
+      padding: 0 0 40px 52px;
+    }
+
+    .setup-step:last-child { padding-bottom: 0; }
+
+    .setup-step-num {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--setup-accent);
+      color: #fff;
+      font-family: 'Syne', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1;
+    }
+
+    .setup-step h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+
+    .setup-step p {
+      font-size: 15px;
+      color: var(--text2);
+      line-height: 1.65;
+    }
+
+    .setup-step a {
+      color: var(--setup-accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .setup-step a:hover { text-decoration: underline; }
+
+    .setup-step code {
+      font-family: ui-monospace, 'Cascadia Code', 'Segoe UI Mono', monospace;
+      font-size: 0.92em;
+      color: var(--text);
+      background: var(--bg3);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
     /* ── Two modes ── */
     .modes {
       display: grid;
@@ -553,6 +668,7 @@
       <span class="nav-name">SimplyComment</span>
     </a>
     <ul class="nav-links">
+      <li><a href="#setup">Setup</a></li>
       <li><a href="#how-it-works">How it works</a></li>
       <li><a href="#modes">Modes</a></li>
       <li><a href="#faq">FAQ</a></li>
@@ -562,7 +678,7 @@
 
   <!-- Hero -->
   <section class="hero">
-    <div class="hero-badge">Free Chrome Extension · LinkedIn</div>
+    <a href="https://chromewebstore.google.com/detail/simplycomment/elojcifdknhfknoifhdmhjhgbiejdcjo" target="_blank" rel="noopener noreferrer" class="hero-badge">Free Chrome Extension</a>
     <h1>LinkedIn comments<br/>that sound like <em>you.</em></h1>
     <p class="hero-sub">AI-generated comments built around your voice, your tone, your style. Not generic AI slop — your words, amplified.</p>
     <div class="hero-actions">
@@ -592,6 +708,35 @@
         <span class="demo-tag">✓ Matched your voice</span>
       </div>
     </div>
+  </section>
+
+  <!-- Setup -->
+  <section class="section setup-section" id="setup">
+    <p class="setup-label">Setup</p>
+    <h2 class="setup-heading">One-time setup.<br/>Comment forever after.</h2>
+    <p class="setup-intro">SimplyComment needs your OpenAI API key to generate comments. Add it once in Settings — stored locally in your browser — and you're ready to go.</p>
+    <ol class="setup-timeline">
+      <li class="setup-step">
+        <span class="setup-step-num" aria-hidden="true">1</span>
+        <h3>Add SimplyComment to Chrome</h3>
+        <p>Install the extension from the <a href="https://chromewebstore.google.com/detail/simplycomment/elojcifdknhfknoifhdmhjhgbiejdcjo" target="_blank" rel="noopener noreferrer">Chrome Web Store</a>. Pin it to your toolbar so it's easy to open on LinkedIn.</p>
+      </li>
+      <li class="setup-step">
+        <span class="setup-step-num" aria-hidden="true">2</span>
+        <h3>Add your API key in Settings</h3>
+        <p>Open SimplyComment → <strong>Settings</strong> and paste your OpenAI API key (starts with <code>sk-</code>). Generation won't work until this is saved. <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">How to find your API key</a></p>
+      </li>
+      <li class="setup-step">
+        <span class="setup-step-num" aria-hidden="true">3</span>
+        <h3>Build your voice profile</h3>
+        <p>In Settings, add a few real comments and posts you've written. The more authentic samples you give it, the better SimplyComment matches your tone.</p>
+      </li>
+      <li class="setup-step">
+        <span class="setup-step-num" aria-hidden="true">4</span>
+        <h3>Generate your first comment</h3>
+        <p>On LinkedIn, open SimplyComment, paste the post you want to reply to, choose Polish Draft or Help Me Ideate, and copy your comment. Done.</p>
+      </li>
+    </ol>
   </section>
 
   <!-- How it works -->
@@ -766,7 +911,7 @@
       });
     }, { threshold: 0.1 });
 
-    document.querySelectorAll('.step, .feature, .mode').forEach(el => {
+    document.querySelectorAll('.step, .feature, .mode, .setup-step').forEach(el => {
       el.style.opacity = '0';
       el.style.transform = 'translateY(20px)';
       el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
