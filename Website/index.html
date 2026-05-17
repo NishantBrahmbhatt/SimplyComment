@@ -27,7 +27,6 @@
       --text2: #888;
       --text3: #444;
       --border: rgba(255,255,255,0.07);
-      --setup-accent: #d8564e;
     }
 
     html { scroll-behavior: smooth; }
@@ -381,35 +380,12 @@
     .step p { font-size: 14px; color: var(--text2); line-height: 1.6; }
 
     /* ── Setup ── */
-    .setup-section {
-      padding-top: 40px;
-      padding-bottom: 80px;
-    }
-
-    .setup-label {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--setup-accent);
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      margin-bottom: 20px;
-    }
-
-    .setup-section h2.setup-heading {
-      font-family: 'Syne', sans-serif;
-      font-size: clamp(28px, 4vw, 44px);
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      line-height: 1.15;
-      margin-bottom: 16px;
-    }
-
     .setup-intro {
       font-size: 16px;
       color: var(--text2);
       max-width: 520px;
       line-height: 1.7;
-      margin-bottom: 48px;
+      margin: -40px 0 48px;
       font-weight: 300;
     }
 
@@ -428,7 +404,7 @@
       top: 20px;
       bottom: 20px;
       width: 1px;
-      background: rgba(255, 255, 255, 0.1);
+      background: var(--border);
     }
 
     .setup-step {
@@ -445,8 +421,8 @@
       width: 32px;
       height: 32px;
       border-radius: 50%;
-      background: var(--setup-accent);
-      color: #fff;
+      background: var(--text);
+      color: #111;
       font-family: 'Syne', sans-serif;
       font-size: 14px;
       font-weight: 700;
@@ -471,12 +447,12 @@
     }
 
     .setup-step a {
-      color: var(--setup-accent);
-      text-decoration: none;
-      font-weight: 500;
+      color: var(--text);
+      text-decoration: underline;
+      text-underline-offset: 3px;
     }
 
-    .setup-step a:hover { text-decoration: underline; }
+    .setup-step a:hover { color: var(--text2); }
 
     .setup-step code {
       font-family: ui-monospace, 'Cascadia Code', 'Segoe UI Mono', monospace;
@@ -710,35 +686,6 @@
     </div>
   </section>
 
-  <!-- Setup -->
-  <section class="section setup-section" id="setup">
-    <p class="setup-label">Setup</p>
-    <h2 class="setup-heading">One-time setup.<br/>Comment forever after.</h2>
-    <p class="setup-intro">SimplyComment needs your OpenAI API key to generate comments. Add it once in Settings — stored locally in your browser — and you're ready to go.</p>
-    <ol class="setup-timeline">
-      <li class="setup-step">
-        <span class="setup-step-num" aria-hidden="true">1</span>
-        <h3>Add SimplyComment to Chrome</h3>
-        <p>Install the extension from the <a href="https://chromewebstore.google.com/detail/simplycomment/elojcifdknhfknoifhdmhjhgbiejdcjo" target="_blank" rel="noopener noreferrer">Chrome Web Store</a>. Pin it to your toolbar so it's easy to open on LinkedIn.</p>
-      </li>
-      <li class="setup-step">
-        <span class="setup-step-num" aria-hidden="true">2</span>
-        <h3>Add your API key in Settings</h3>
-        <p>Open SimplyComment → <strong>Settings</strong> and paste your OpenAI API key (starts with <code>sk-</code>). Generation won't work until this is saved. <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">How to find your API key</a></p>
-      </li>
-      <li class="setup-step">
-        <span class="setup-step-num" aria-hidden="true">3</span>
-        <h3>Build your voice profile</h3>
-        <p>In Settings, add a few real comments and posts you've written. The more authentic samples you give it, the better SimplyComment matches your tone.</p>
-      </li>
-      <li class="setup-step">
-        <span class="setup-step-num" aria-hidden="true">4</span>
-        <h3>Generate your first comment</h3>
-        <p>On LinkedIn, open SimplyComment, paste the post you want to reply to, choose Polish Draft or Help Me Ideate, and copy your comment. Done.</p>
-      </li>
-    </ol>
-  </section>
-
   <!-- How it works -->
   <section class="section" id="how-it-works">
     <p class="section-label">How it works</p>
@@ -824,6 +771,35 @@
         <p>No subscription, no limits hidden behind a paywall. SimplyComment is free.</p>
       </div>
     </div>
+  </section>
+
+  <!-- Setup -->
+  <section class="section" style="padding-top:0;" id="setup">
+    <p class="section-label">Setup</p>
+    <h2>One-time setup.<br/>Comment forever after.</h2>
+    <p class="setup-intro">SimplyComment needs your OpenAI API key to generate comments. Add it once in Settings — stored locally in your browser — and you're ready to go.</p>
+    <ol class="setup-timeline">
+      <li class="setup-step">
+        <span class="setup-step-num" aria-hidden="true">1</span>
+        <h3>Add SimplyComment to Chrome</h3>
+        <p>Install the extension from the <a href="https://chromewebstore.google.com/detail/simplycomment/elojcifdknhfknoifhdmhjhgbiejdcjo" target="_blank" rel="noopener noreferrer">Chrome Web Store</a>. Pin it to your toolbar so it's easy to open on LinkedIn.</p>
+      </li>
+      <li class="setup-step">
+        <span class="setup-step-num" aria-hidden="true">2</span>
+        <h3>Add your API key in Settings</h3>
+        <p>Open SimplyComment → <strong>Settings</strong> and paste your OpenAI API key (starts with <code>sk-</code>). Generation won't work until this is saved. <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">How to find your API key</a></p>
+      </li>
+      <li class="setup-step">
+        <span class="setup-step-num" aria-hidden="true">3</span>
+        <h3>Build your voice profile</h3>
+        <p>In Settings, add a few real comments and posts you've written. The more authentic samples you give it, the better SimplyComment matches your tone.</p>
+      </li>
+      <li class="setup-step">
+        <span class="setup-step-num" aria-hidden="true">4</span>
+        <h3>Generate your first comment</h3>
+        <p>On LinkedIn, open SimplyComment, paste the post you want to reply to, choose Polish Draft or Help Me Ideate, and copy your comment. Done.</p>
+      </li>
+    </ol>
   </section>
 
   <!-- FAQ -->
