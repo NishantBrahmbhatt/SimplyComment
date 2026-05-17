@@ -1,6 +1,101 @@
 (() => {
   'use strict';
-  const $ = (id) => document.getElementById(id);
+
+  const HOST_ID = 'simplycomment-extension-host';
+
+  if (document.getElementById(HOST_ID)) return;
+
+  const ICON_URL = chrome.runtime.getURL('icon48.png');
+  const STYLE_URL = chrome.runtime.getURL('overlay.css');
+
+  const hostEl = document.createElement('div');
+  hostEl.id = HOST_ID;
+  document.documentElement.appendChild(hostEl);
+
+  const shadow = hostEl.attachShadow({ mode: 'open' });
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = STYLE_URL;
+  shadow.appendChild(link);
+
+  const tmpl = document.createElement('template');
+  tmpl.innerHTML = `
+<div class="sc-shell" id="scShell">
+  <div class="sc-panel-slide">
+    <div class="sc-panel-inner">
+      <div class="sc-header-row">
+        <div class="brand">
+          <img src="${ICON_URL}" alt="" />
+          <h1>SimplyComment</h1>
+        </div>
+        <div class="header-actions">
+          <button type="button" class="close-btn" id="collapsePanel" aria-label="Close panel">×</button>
+          <button type="button" class="settings-btn" id="openSettings">Settings</button>
+        </div>
+      </div>
+
+      <div class="mode-switch">
+        <button type="button" class="mode-btn mode-btn--active" data-mode="polish">Polish my draft</button>
+        <button type="button" class="mode-btn" data-mode="ideate">Help me ideate</button>
+      </div>
+
+      <label for="postText">Source post</label>
+      <textarea id="postText" placeholder="Paste the full post you want to reply to."></textarea>
+
+      <div id="angleWrap">
+        <label for="gist">Your take</label>
+        <textarea id="gist" placeholder="Write rough thoughts. We refine into one strong comment."></textarea>
+        <div class="chip-row">
+          <button type="button" class="chip" data-chip="I agree, because">Agree and why</button>
+          <button type="button" class="chip" data-chip="I respectfully disagree, because">Respectful pushback</button>
+          <button type="button" class="chip" data-chip="Curious what you think about">Ask a smart question</button>
+          <button type="button" class="chip" data-chip="One practical takeaway is">Practical takeaway</button>
+        </div>
+      </div>
+
+      <label>Generate</label>
+      <button type="button" class="primary" id="generate">Generate comment</button>
+
+      <label>Generated comment</label>
+      <div id="outputCard" class="empty">Your one-sentence comment appears here.</div>
+      <div class="actions-row">
+        <button type="button" class="secondary" id="copyOutput">Copy</button>
+        <button type="button" class="secondary" id="regenerate">Regenerate</button>
+        <button type="button" class="secondary" id="moreDirect">More direct</button>
+      </div>
+      <div id="status" class="status"></div>
+    </div>
+  </div>
+  <button type="button" class="sc-tab-btn" id="scTabToggle" aria-expanded="false" aria-label="SimplyComment" title="SimplyComment">
+    <img src="${ICON_URL}" alt="" />
+    <span class="sc-tab-label">SC</span>
+  </button>
+</div>
+`;
+
+  shadow.appendChild(tmpl.content.cloneNode(true));
+
+  const $ = (id) => shadow.getElementById(id);
+
+  let panelOpen = false;
+  const shell = $('scShell');
+
+  const setPanelOpen = (open) => {
+    panelOpen = Boolean(open);
+    shell.classList.toggle('sc-shell--open', panelOpen);
+    $('scTabToggle').setAttribute('aria-expanded', panelOpen ? 'true' : 'false');
+  };
+
+  $('scTabToggle').addEventListener('click', () => setPanelOpen(!panelOpen));
+  $('collapsePanel').addEventListener('click', () => setPanelOpen(false));
+
+  const tabImg = $('scTabToggle')?.querySelector('img');
+  if (tabImg) {
+    tabImg.addEventListener('error', () => {
+      $('scTabToggle').classList.add('sc-tab-btn--fallback');
+    });
+  }
+
   const STORAGE_KEYS = {
     apiKey: 'apiKey',
     profileName: 'profileName',
@@ -41,9 +136,9 @@
     card.classList.remove('empty');
   };
 
-  const getMode = () => document.querySelector('.mode-btn--active')?.dataset.mode || 'polish';
+  const getMode = () => shadow.querySelector('.mode-btn--active')?.dataset.mode || 'polish';
   const setMode = (mode) => {
-    document.querySelectorAll('.mode-btn').forEach((btn) => {
+    shadow.querySelectorAll('.mode-btn').forEach((btn) => {
       btn.classList.toggle('mode-btn--active', btn.dataset.mode === mode);
     });
     $('angleWrap').classList.toggle('hide', mode === 'ideate');
@@ -51,10 +146,8 @@
 
   const scrollToComposeStep = () => {
     const target = getMode() === 'ideate' ? $('generate') : $('angleWrap');
-    if (!target) return;
-    const offset = getMode() === 'ideate' ? 12 : 18;
-    const y = Math.max(0, target.offsetTop - offset);
-    window.scrollTo({ top: y, behavior: 'smooth' });
+    if (!target || !panelInnerEl) return;
+    target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   };
 
   const saveDraft = () => {
@@ -134,12 +227,17 @@
         const wordCount = tokens.length || 1;
         const lengthDistance = Math.abs(wordCount - targetWordHint);
         const puncDistance = punctuationDistance(queryPunc, punctuationProfile(sample));
-        const score = overlap * 2 + density * 8 + bigramOverlap * 2.8 + lengthBonus - lengthDistance * 0.08 - puncDistance * 0.5;
+        const score =
+          overlap * 2 +
+          density * 8 +
+          bigramOverlap * 2.8 +
+          lengthBonus -
+          lengthDistance * 0.08 -
+          puncDistance * 0.5;
         return { sample, score, overlap, bigramOverlap, lengthDistance, puncDistance };
       })
       .sort((a, b) => b.score - a.score);
 
-    // Second pass: rerank top candidates using finer style compatibility.
     return coarseRanked
       .slice(0, 10)
       .map((item) => {
@@ -163,7 +261,6 @@
     const rankedComments = rankSamplesByRelevance(commentSamples, query, targetWordHint);
     const rankedPosts = rankSamplesByRelevance(postSamples, query, targetWordHint);
 
-    // Keep prompt compact: best 4 comments + best 2 posts.
     return {
       comments: rankedComments.slice(0, 4),
       posts: rankedPosts.slice(0, 2),
@@ -184,9 +281,9 @@
     const avgWords =
       sentenceLikePieces.length
         ? Math.round(
-            sentenceLikePieces.reduce((sum, s) => sum + s.split(/\s+/).filter(Boolean).length, 0) /
-              sentenceLikePieces.length
-          )
+          sentenceLikePieces.reduce((sum, s) => sum + s.split(/\s+/).filter(Boolean).length, 0) /
+            sentenceLikePieces.length
+        )
         : 14;
 
     const punctuationCounts = {
@@ -199,7 +296,8 @@
     };
 
     const emojiCount = (corpus.join(' ').match(/[\u{1F300}-\u{1FAFF}]/gu) || []).length;
-    const firstPersonCount = (corpus.join(' ').match(/\b(i|i'm|ive|i've|my|me|we|our|us)\b/gi) || []).length;
+    const firstPersonCount =
+      (corpus.join(' ').match(/\b(i|i'm|ive|i've|my|me|we|our|us)\b/gi) || []).length;
     const corpusWordCount = corpus.join(' ').split(/\s+/).filter(Boolean).length || 1;
 
     const firstPersonDensity = firstPersonCount / corpusWordCount;
@@ -208,24 +306,48 @@
     const emojiDensity = emojiCount / corpusWordCount;
 
     const styleBullets = [];
-    styleBullets.push(`- Typical sentence length is around ${avgWords} words; stay near that unless clarity requires shorter.`);
+    styleBullets.push(
+      `- Typical sentence length is around ${avgWords} words; stay near that unless clarity requires shorter.`
+    );
 
-    if (firstPersonDensity > 0.018) styleBullets.push('- First-person voice is common; use it naturally when it fits the user angle.');
-    else styleBullets.push('- First-person voice is less common; avoid overusing "I" statements.');
+    if (firstPersonDensity > 0.018) {
+      styleBullets.push(
+        '- First-person voice is common; use it naturally when it fits the user angle.'
+      );
+    } else {
+      styleBullets.push('- First-person voice is less common; avoid overusing "I" statements.');
+    }
 
-    if (questionDensity > 0.008) styleBullets.push('- Questions are part of this voice; asking one concise question is acceptable.');
-    else styleBullets.push('- Questions are less common; prefer statements unless the user angle clearly asks a question.');
+    if (questionDensity > 0.008) {
+      styleBullets.push('- Questions are part of this voice; asking one concise question is acceptable.');
+    } else {
+      styleBullets.push(
+        '- Questions are less common; prefer statements unless the user angle clearly asks a question.'
+      );
+    }
 
-    if (exclaimDensity > 0.008) styleBullets.push('- Light enthusiasm punctuation can appear occasionally, but keep it controlled.');
-    else styleBullets.push('- Keep punctuation restrained; avoid exclamation-heavy phrasing.');
+    if (exclaimDensity > 0.008) {
+      styleBullets.push('- Light enthusiasm punctuation can appear occasionally, but keep it controlled.');
+    } else {
+      styleBullets.push('- Keep punctuation restrained; avoid exclamation-heavy phrasing.');
+    }
 
-    if (emojiDensity > 0.002) styleBullets.push('- Emoji can be used sparingly if it feels natural to this user.');
-    else styleBullets.push('- Avoid emoji unless explicitly present in the user angle.');
+    if (emojiDensity > 0.002) {
+      styleBullets.push('- Emoji can be used sparingly if it feels natural to this user.');
+    } else {
+      styleBullets.push('- Avoid emoji unless explicitly present in the user angle.');
+    }
 
-    if (punctuationCounts.ellipsis > 0) styleBullets.push('- Ellipses appear in samples; use only if it feels natural and not excessive.');
-    if (punctuationCounts.colon > 0) styleBullets.push('- Colon usage appears in samples; concise colon structures are acceptable.');
+    if (punctuationCounts.ellipsis > 0) {
+      styleBullets.push('- Ellipses appear in samples; use only if it feels natural and not excessive.');
+    }
+    if (punctuationCounts.colon > 0) {
+      styleBullets.push('- Colon usage appears in samples; concise colon structures are acceptable.');
+    }
     if (punctuationCounts.semicolon === 0) styleBullets.push('- Avoid semicolons.');
-    if (punctuationCounts.parens === 0) styleBullets.push('- Avoid parenthetical asides unless necessary for clarity.');
+    if (punctuationCounts.parens === 0) {
+      styleBullets.push('- Avoid parenthetical asides unless necessary for clarity.');
+    }
 
     return styleBullets.join('\n');
   };
@@ -262,7 +384,8 @@
       voiceBlock += '\n\nUse these most relevant voice examples from user posts:\n';
       postSamples.forEach((s, i) => { voiceBlock += `\n[Post ${i + 1}]\n${s}\n`; });
     }
-    const styleFingerprint = cachedFingerprint || deriveStyleFingerprint(profile.profileComments, profile.profilePosts);
+    const styleFingerprint =
+      cachedFingerprint || deriveStyleFingerprint(profile.profileComments, profile.profilePosts);
     const who = [
       profile.profileName && `Name: ${profile.profileName}`,
       profile.profileRole && `Role: ${profile.profileRole}`,
@@ -293,12 +416,15 @@
     );
   };
 
-  const sanitize = (s) => (s || '').replace(/\u2014/g, ', ').replace(/\s+,/g, ',').replace(/\s{2,}/g, ' ').trim();
+  const sanitize = (s) =>
+    (s || '').replace(/\u2014/g, ', ').replace(/\s+,/g, ',').replace(/\s{2,}/g, ' ').trim();
   const weak = (s) => {
     const t = (s || '').toLowerCase();
     if (!t) return true;
     if (t.split(/\s+/).length < 8) return true;
-    return ['great post', 'thanks for sharing', 'well said', 'really insightful'].some((p) => t.includes(p));
+    return ['great post', 'thanks for sharing', 'well said', 'really insightful'].some((p) =>
+      t.includes(p)
+    );
   };
 
   const callOpenAI = async (apiKey, system, user) => {
@@ -327,7 +453,9 @@
     const gistRaw = $('gist').value.trim();
     const gist = gistRaw || (mode === 'ideate' ? 'I want a thoughtful and specific comment.' : '');
     if (!postText) return showStatus('Paste the post text first.', 'error');
-    if (mode === 'polish' && !gistRaw) return showStatus('Polish mode needs a quick draft first.', 'error');
+    if (mode === 'polish' && !gistRaw) {
+      return showStatus('Polish mode needs a quick draft first.', 'error');
+    }
 
     const sync = await chrome.storage.sync.get({
       [STORAGE_KEYS.apiKey]: '',
@@ -367,19 +495,32 @@
       return showStatus('Add comment samples and post samples in Settings before generating.', 'error');
     }
     const selectedSamples = selectRelevantSamples(profile, postText, gist);
-    const cachedFingerprint = await getCachedStyleFingerprint(profile.profileComments, profile.profilePosts);
+    const cachedFingerprint = await getCachedStyleFingerprint(
+      profile.profileComments,
+      profile.profilePosts
+    );
     const system = buildSystemPrompt(profile, mode, toneMode, selectedSamples, cachedFingerprint);
-    const user =
-      'POST:\n' + postText +
-      '\n\nMY ANGLE:\n' + gist +
+    const userMsg =
+      'POST:\n' +
+      postText +
+      '\n\nMY ANGLE:\n' +
+      gist +
       '\n\nWrite the single comment now.';
 
-    ['generate', 'regenerate', 'moreDirect'].forEach((id) => { $(id).disabled = true; });
+    ['generate', 'regenerate', 'moreDirect'].forEach((id) => {
+      $(id).disabled = true;
+    });
     setOutput('');
     try {
-      let suggestion = sanitize(await callOpenAI(apiKey, system, user));
+      let suggestion = sanitize(await callOpenAI(apiKey, system, userMsg));
       if (weak(suggestion)) {
-        suggestion = sanitize(await callOpenAI(apiKey, system, user + '\n\nPrevious output was generic. Rewrite with one concrete detail.'));
+        suggestion = sanitize(
+          await callOpenAI(
+            apiKey,
+            system,
+            userMsg + '\n\nPrevious output was generic. Rewrite with one concrete detail.'
+          )
+        );
       }
       setOutput(suggestion);
       saveDraft();
@@ -387,7 +528,9 @@
     } catch (e) {
       showStatus(e.message || String(e), 'error');
     } finally {
-      ['generate', 'regenerate', 'moreDirect'].forEach((id) => { $(id).disabled = false; });
+      ['generate', 'regenerate', 'moreDirect'].forEach((id) => {
+        $(id).disabled = false;
+      });
     }
   };
 
@@ -404,19 +547,23 @@
     setMode(drafts[DRAFT_KEYS.mode] || 'polish');
   };
 
-  document.querySelectorAll('.mode-btn').forEach((btn) => btn.addEventListener('click', () => {
-    setMode(btn.dataset.mode);
-    scheduleDraft();
-    setTimeout(scrollToComposeStep, 40);
-  }));
-  document.querySelectorAll('.chip').forEach((chip) => chip.addEventListener('click', () => {
-    const s = chip.dataset.chip || '';
-    const gist = $('gist');
-    gist.value = gist.value.trim() ? `${gist.value.trim()} ${s}` : s;
-    gist.focus();
-    gist.selectionStart = gist.selectionEnd = gist.value.length;
-    scheduleDraft();
-  }));
+  shadow.querySelectorAll('.mode-btn').forEach((btn) =>
+    btn.addEventListener('click', () => {
+      setMode(btn.dataset.mode);
+      scheduleDraft();
+      setTimeout(scrollToComposeStep, 40);
+    })
+  );
+  shadow.querySelectorAll('.chip').forEach((chip) =>
+    chip.addEventListener('click', () => {
+      const s = chip.dataset.chip || '';
+      const gistEl = $('gist');
+      gistEl.value = gistEl.value.trim() ? `${gistEl.value.trim()} ${s}` : s;
+      gistEl.focus();
+      gistEl.selectionStart = gistEl.selectionEnd = gistEl.value.length;
+      scheduleDraft();
+    })
+  );
   ['postText', 'gist'].forEach((id) => {
     $(id).addEventListener('input', scheduleDraft);
     $(id).addEventListener('blur', saveDraft);
@@ -439,13 +586,30 @@
     }
   });
   $('openSettings').addEventListener('click', () => chrome.runtime.openOptionsPage());
-  document.addEventListener('keydown', (e) => {
-    const isMac = navigator.platform.toUpperCase().includes('MAC');
-    const mod = isMac ? e.metaKey : e.ctrlKey;
-    if (!mod) return;
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); run('normal'); }
-    if (e.key.toLowerCase() === 'c' && e.shiftKey) { e.preventDefault(); $('copyOutput').click(); }
+
+  /** Hotkeys mirror popup while the LinkedIn overlay is open */
+  document.addEventListener(
+    'keydown',
+    (e) => {
+      if (!panelOpen) return;
+      const isMac = navigator.platform.toUpperCase().includes('MAC');
+      const mod = isMac ? e.metaKey : e.ctrlKey;
+      if (!mod) return;
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        run('normal');
+      }
+      if (e.key.toLowerCase() === 'c' && e.shiftKey) {
+        e.preventDefault();
+        $('copyOutput').click();
+      }
+    },
+    true
+  );
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') saveDraft();
   });
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveDraft(); });
+
   restore();
 })();

@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SimplyComment — AI LinkedIn Comments That Sound Like You</title>
+  <meta name="description" content="Generate personalised LinkedIn comments that match your tone and voice. Polish drafts or ideate from scratch. Free Chrome extension."/>
+  <meta property="og:title" content="SimplyComment — AI LinkedIn Comments That Sound Like You"/>
+  <meta property="og:description" content="Generate LinkedIn comments that match your tone. Built around your voice profile."/>
+  <meta property="og:type" content="website"/>
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon.png"/>
+  <link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #111111;
+      --bg2: #1a1a1a;
+      --bg3: #222222;
+      --accent: #f0f0f0;
+      --accent-dim: rgba(240,240,240,0.08);
+      --accent-border: rgba(240,240,240,0.12);
+      --text: #f0f0f0;
+      --text2: #888;
+      --text3: #444;
+      --border: rgba(255,255,255,0.07);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 20px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(17,17,17,0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .nav-logomark {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: var(--bg3);
+    }
+
+    .nav-logomark img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .nav-name {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: -0.02em;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text2);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-cta {
+      background: var(--text) !important;
+      color: #111 !important;
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-weight: 600 !important;
+      transition: opacity 0.2s !important;
+    }
+
+    .nav-cta:hover { opacity: 0.85 !important; }
+
+    /* ── Hero ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 40px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -200px; left: 50%;
+      transform: translateX(-50%);
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--accent-dim);
+      border: 1px solid var(--accent-border);
+      color: var(--text2);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 12px;
+      border-radius: 20px;
+      margin-bottom: 32px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(40px, 6.5vw, 76px);
+      font-weight: 800;
+      line-height: 1.04;
+      letter-spacing: -0.03em;
+      margin-bottom: 24px;
+      max-width: 820px;
+    }
+
+    h1 em {
+      font-style: normal;
+      color: var(--text2);
+    }
+
+    .hero-sub {
+      font-size: clamp(16px, 2vw, 19px);
+      color: var(--text2);
+      max-width: 480px;
+      margin-bottom: 48px;
+      font-weight: 300;
+      line-height: 1.7;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 80px;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--text);
+      color: #111;
+      padding: 14px 28px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 15px;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg3);
+      color: var(--text);
+      padding: 14px 28px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 15px;
+      border: 1px solid var(--border);
+      transition: background 0.2s;
+    }
+
+    .btn-secondary:hover { background: #2a2a2a; }
+
+    /* ── Comment demo card ── */
+    .demo-wrap {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .demo-label {
+      font-size: 11px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .demo-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      text-align: left;
+    }
+
+    .demo-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .demo-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .demo-meta { flex: 1; }
+    .demo-name { font-size: 13px; font-weight: 600; }
+    .demo-role { font-size: 12px; color: var(--text2); }
+
+    .demo-post {
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.6;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+
+    .demo-comment-label {
+      font-size: 11px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .demo-comment-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .demo-comment {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.65;
+    }
+
+    .demo-tag {
+      display: inline-block;
+      margin-top: 12px;
+      font-size: 11px;
+      background: var(--accent-dim);
+      border: 1px solid var(--accent-border);
+      color: var(--text2);
+      padding: 3px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Section ── */
+    .section {
+      padding: 100px 48px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 16px;
+    }
+
+    h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 56px;
+      line-height: 1.15;
+    }
+
+    /* ── How it works ── */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 24px;
+    }
+
+    .step {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 32px 28px;
+      transition: border-color 0.2s;
+    }
+
+    .step:hover { border-color: var(--accent-border); }
+
+    .step-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 48px;
+      font-weight: 800;
+      color: rgba(255,255,255,0.06);
+      line-height: 1;
+      margin-bottom: 16px;
+    }
+
+    .step h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .step p { font-size: 14px; color: var(--text2); line-height: 1.6; }
+
+    /* ── Two modes ── */
+    .modes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .mode {
+      background: var(--bg);
+      padding: 40px 36px;
+      transition: background 0.2s;
+    }
+
+    .mode:hover { background: var(--bg2); }
+
+    .mode-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--accent-dim);
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .mode-icon svg { width: 22px; height: 22px; color: var(--text2); }
+
+    .mode h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 19px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .mode p { font-size: 14px; color: var(--text2); line-height: 1.65; }
+
+    /* ── Features ── */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .feature {
+      background: var(--bg);
+      padding: 32px 28px;
+      transition: background 0.2s;
+    }
+
+    .feature:hover { background: var(--bg2); }
+
+    .feature-icon {
+      font-size: 22px;
+      margin-bottom: 14px;
+    }
+
+    .feature h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 7px;
+    }
+
+    .feature p { font-size: 13px; color: var(--text2); line-height: 1.6; }
+
+    /* ── FAQ ── */
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .faq-item { background: var(--bg); }
+
+    .faq-q {
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: none;
+      color: var(--text);
+      padding: 22px 28px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      font-family: 'DM Sans', sans-serif;
+      transition: background 0.15s;
+    }
+
+    .faq-q:hover { background: var(--bg2); }
+
+    .faq-icon {
+      width: 18px; height: 18px;
+      flex-shrink: 0;
+      color: var(--text3);
+      transition: transform 0.2s;
+    }
+
+    .faq-item.open .faq-icon { transform: rotate(45deg); }
+
+    .faq-a {
+      display: none;
+      padding: 0 28px 22px;
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.7;
+    }
+
+    .faq-item.open .faq-a { display: block; }
+
+    /* ── Footer CTA ── */
+    .footer-cta {
+      padding: 120px 48px;
+      text-align: center;
+    }
+
+    .footer-cta h2 { margin-bottom: 16px; }
+    .footer-cta p { color: var(--text2); margin-bottom: 40px; font-size: 16px; }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .footer-left { font-size: 13px; color: var(--text3); }
+    .footer-left a { color: var(--text3); text-decoration: none; }
+
+    .footer-links { display: flex; gap: 24px; }
+    .footer-links a {
+      font-size: 13px;
+      color: var(--text3);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--text2); }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      nav { padding: 16px 20px; }
+      .nav-links { display: none; }
+      .hero { padding: 100px 20px 60px; }
+      .section { padding: 60px 20px; }
+      .footer-cta { padding: 60px 20px; }
+      footer { padding: 24px 20px; flex-direction: column; align-items: flex-start; }
+      .modes { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav>
+    <a href="/" class="nav-logo">
+      <div class="nav-logomark">
+        <img src="logo.png" alt="SimplyComment"/>
+      </div>
+      <span class="nav-name">SimplyComment</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#how-it-works">How it works</a></li>
+      <li><a href="#modes">Modes</a></li>
+      <li><a href="#faq">FAQ</a></li>
+      <li><a href="https://chromewebstore.google.com/detail/simplycomment/elojcifdknhfknoifhdmhjhgbiejdcjo" target="_blank" class="nav-cta">Add to Chrome</a></li>
+    </ul>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-badge">Free Chrome Extension · LinkedIn</div>
+    <h1>LinkedIn comments<br/>that sound like <em>you.</em></h1>
+    <p class="hero-sub">AI-generated comments built around your voice, your tone, your style. Not generic AI slop — your words, amplified.</p>
+    <div class="hero-actions">
+      <a href="https://chromewebstore.google.com/detail/simplycomment/elojcifdknhfknoifhdmhjhgbiejdcjo" target="_blank" class="btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+        Add to Chrome — It's free
+      </a>
+      <a href="#how-it-works" class="btn-secondary">
+        See how it works
+      </a>
+    </div>
+
+    <!-- Demo card -->
+    <div class="demo-wrap">
+      <p class="demo-label">Generated comment</p>
+      <div class="demo-card">
+        <div class="demo-card-header">
+          <div class="demo-avatar">JK</div>
+          <div class="demo-meta">
+            <div class="demo-name">James Kirby</div>
+            <div class="demo-role">Head of Growth · SaaS</div>
+          </div>
+        </div>
+        <p class="demo-post">"Most founders I know are obsessed with product. The ones who win are obsessed with distribution. You can have the best product in the world and still lose to a worse one with better reach."</p>
+        <div class="demo-comment-label">SimplyComment</div>
+        <p class="demo-comment">This hits. I've seen it play out firsthand — we had a stronger product than our main competitor for 18 months but they were everywhere and we weren't. Distribution isn't a feature you can ship later, it has to be baked in from day one.</p>
+        <span class="demo-tag">✓ Matched your voice</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="section" id="how-it-works">
+    <p class="section-label">How it works</p>
+    <h2>Set up once.<br/>Comment in seconds.</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <h3>Build your voice profile</h3>
+        <p>Paste a few things you've written — a post, a comment, anything. SimplyComment learns your tone, vocabulary, and style so every generated comment sounds like you wrote it.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <h3>Open any LinkedIn post</h3>
+        <p>Click the SimplyComment icon, paste the post you want to comment on, and choose your mode — Polish Draft or Help Me Ideate.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <h3>Get your comment</h3>
+        <p>SimplyComment generates a comment in your voice in seconds. Copy it, tweak it if you want, and post. Done.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Two modes -->
+  <section class="section" style="padding-top:0;" id="modes">
+    <p class="section-label">Two modes</p>
+    <h2>Start from scratch<br/>or polish what you have.</h2>
+    <div class="modes">
+      <div class="mode">
+        <div class="mode-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+          </svg>
+        </div>
+        <h3>Polish Draft</h3>
+        <p>Have something in mind but can't quite phrase it? Write a rough draft, pick a direction — agree, disagree, ask a question, share experience — and SimplyComment refines it into a polished comment in your voice.</p>
+      </div>
+      <div class="mode">
+        <div class="mode-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+          </svg>
+        </div>
+        <h3>Help Me Ideate</h3>
+        <p>No idea where to start? Paste the post, pick your angle, and let SimplyComment generate a comment from scratch — grounded in your voice profile so it still sounds like you, not like a robot.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section" style="padding-top:0;">
+    <p class="section-label">Features</p>
+    <h2>Built for real<br/>LinkedIn engagement.</h2>
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">🎙️</div>
+        <h3>Voice matching</h3>
+        <p>Train SimplyComment on your own writing. The more you give it, the better it gets at sounding like you.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🎯</div>
+        <h3>Comment parameters</h3>
+        <p>Choose your angle — agree, disagree, ask a question, share experience, add value. Every comment has a purpose.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">⚡</div>
+        <h3>Seconds, not minutes</h3>
+        <p>Stop spending 5 minutes crafting a comment. SimplyComment gets you there in under 10 seconds.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🔒</div>
+        <h3>Your data stays yours</h3>
+        <p>Your voice profile and writing samples are stored locally in your browser. Nothing is sent to any external server beyond the AI API call.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">✏️</div>
+        <h3>Always editable</h3>
+        <p>Generated comments are a starting point. Edit freely before posting — you're always in control of what goes live.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🆓</div>
+        <h3>Free to use</h3>
+        <p>No subscription, no limits hidden behind a paywall. SimplyComment is free.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" style="padding-top:0;" id="faq">
+    <p class="section-label">FAQ</p>
+    <h2>Common questions.</h2>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q">
+          Will my comments sound like AI?
+          <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <div class="faq-a">That's exactly what we designed against. SimplyComment builds a voice profile from your own writing, so generated comments reflect your vocabulary, sentence structure, and tone. The more writing samples you give it, the more authentic the output. You should still review before posting — but they won't read like generic AI.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          Is it really free?
+          <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <div class="faq-a">Yes. No subscription, no credit limit, no premium tier. SimplyComment is free.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          What do I need to set up?
+          <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <div class="faq-a">Install the extension, then go to Settings and fill in your name, industry, and LinkedIn URL. Paste at least one post and one comment you've written — this trains your voice profile. That's it. The whole setup takes about 2 minutes.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          Does it work on any LinkedIn post?
+          <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <div class="faq-a">Yes. You paste the post text into the SimplyComment popup, so it works on any LinkedIn post regardless of format.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          Is this against LinkedIn's terms?
+          <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <div class="faq-a">SimplyComment is a writing assistant — it helps you write better comments, just like using Grammarly or any other writing tool. You review and post the comment yourself. It does not automate any LinkedIn actions or interact with LinkedIn's API.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer CTA -->
+  <section class="footer-cta">
+    <p class="section-label">Get started</p>
+    <h2>Start commenting better.</h2>
+    <p>Free. Set up in 2 minutes.</p>
+    <a href="https://chromewebstore.google.com/detail/simplycomment/elojcifdknhfknoifhdmhjhgbiejdcjo" target="_blank" class="btn-primary" style="font-size:16px;padding:16px 32px;">
+      Add SimplyComment to Chrome
+    </a>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-left">
+      <span>© 2026 SimplyComment · </span>
+      <a href="https://usesimplytools.com" target="_blank">usesimplytools.com</a>
+    </div>
+    <div class="footer-links">
+      <a href="https://tally.so/r/lbY7ZV" target="_blank" rel="noopener noreferrer">Report a bug</a>
+      <a href="https://tally.so/r/9qREPE" target="_blank" rel="noopener noreferrer">Feature request</a>
+      <a href="mailto:hello@usesimplytools.com">Contact</a>
+    </div>
+  </footer>
+
+  <script>
+    document.querySelectorAll('.faq-q').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const item = btn.parentElement;
+        const isOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+        if (!isOpen) item.classList.add('open');
+      });
+    });
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.style.opacity = '1';
+          e.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.step, .feature, .mode').forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(20px)';
+      el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+      observer.observe(el);
+    });
+  </script>
+</body>
+</html>

@@ -35,9 +35,10 @@
       box-sizing: border-box;
       outline: none;
     }
-    textarea { min-height: 92px; resize: vertical; }
+    textarea { min-height: 132px; resize: vertical; }
     input:focus, textarea:focus { border-color: #0a66c2; box-shadow: 0 0 0 1px rgba(10,102,194,.25); }
     .row { display: flex; gap: 10px; align-items: center; margin-top: 18px; }
+    .row.wrap { flex-wrap: wrap; align-items: flex-start; }
     button {
       border: none;
       border-radius: 9px;
@@ -48,33 +49,160 @@
       cursor: pointer;
     }
     button:hover { background: #004182; }
+    button.secondary {
+      background: #13151a;
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #eef0f4;
+    }
+    button.secondary:hover { background: #1a1d24; border-color: rgba(255,255,255,0.16); }
+    button.tiny { padding: 7px 10px; font-size: 12px; }
+    .field-note {
+      margin-top: 6px;
+      color: #8b919c;
+      font-size: 12px;
+    }
+    .label-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 14px;
+      margin-bottom: 6px;
+    }
+    .label-row label { margin: 0; }
+    .help-bubble {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.18);
+      color: #c7ccda;
+      font-size: 11px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: help;
+      user-select: none;
+      background: #13151a;
+    }
+    .help-bubble:hover { border-color: rgba(255,255,255,0.35); color: #eef0f4; }
+    .help-title {
+      margin-top: 8px;
+      margin-bottom: 4px;
+      color: #d7dbea;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .help-panel {
+      margin-top: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 10px;
+      background: #10131a;
+      display: none;
+    }
+    .help-panel.open { display: block; }
+    .help-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .help-link {
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: #13151a;
+      color: #eef0f4;
+      border-radius: 9px;
+      padding: 7px 10px;
+      font-size: 12px;
+    }
+    .help-link:hover { border-color: rgba(255,255,255,0.25); }
+    .select-inline {
+      min-width: 160px;
+      width: auto;
+      max-width: 220px;
+      padding: 8px 10px;
+      border-radius: 9px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: #13151a;
+      color: #eef0f4;
+      font: inherit;
+    }
+    .collection-card {
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 8px;
+      background: #0f1116;
+    }
     #status { color: #5ecf9a; min-height: 20px; }
   </style>
 </head>
 <body>
   <h1>SimplyComment Settings</h1>
-  <p>Profile and API live here so the popup stays fast and clean.</p>
+  <p>Set your context once. The popup stays fast and focused.</p>
 
-  <label for="apiKey">OpenAI API key</label>
-  <input id="apiKey" type="password" placeholder="sk-..." autocomplete="off" />
+  <div class="label-row">
+    <label for="apiKey">API key</label>
+    <span
+      id="apiHelpToggle"
+      class="help-bubble"
+      title="How do I get an API key?"
+    >?</span>
+  </div>
+  <input id="apiKey" type="password" placeholder="Paste your API key" autocomplete="off" />
+  <div class="field-note">Stored locally in your browser profile.</div>
+  <div id="apiHelpPanel" class="help-panel" aria-hidden="true">
+    <div class="help-title">How do I get an API key?</div>
+    <div class="field-note">1) Pick a provider. 2) Create an account. 3) Generate an API key. 4) Add billing if required. 5) Paste the key above.</div>
+    <div class="help-row">
+      <a class="help-link" target="_blank" rel="noreferrer" href="https://platform.openai.com/docs/quickstart">OpenAI guide</a>
+      <a class="help-link" target="_blank" rel="noreferrer" href="https://ai.google.dev/gemini-api/docs/api-key">Gemini guide</a>
+      <a class="help-link" target="_blank" rel="noreferrer" href="https://docs.anthropic.com/en/api/getting-started">Claude guide</a>
+    </div>
+  </div>
 
   <label for="profileName">Name (optional)</label>
-  <input id="profileName" type="text" placeholder="How you sign comments" />
+  <input id="profileName" type="text" placeholder="How your comments should sound" />
 
-  <label for="profileRole">Role / industry (optional)</label>
-  <input id="profileRole" type="text" placeholder="e.g. Product manager, fintech" />
+  <label for="profileRole">Role or industry (optional)</label>
+  <input id="profileRole" type="text" placeholder="Example: Product manager, fintech" />
+
+  <label for="linkedinUrl">LinkedIn profile URL (optional)</label>
+  <input id="linkedinUrl" type="url" placeholder="https://www.linkedin.com/in/your-handle" />
 
   <label for="profileTone">Tone notes (optional)</label>
-  <input id="profileTone" type="text" placeholder="e.g. warm, concise, practical" />
+  <input id="profileTone" type="text" placeholder="Example: warm, concise, practical" />
 
-  <label for="profileComments">Your comments (4 to 6, separated by blank lines)</label>
-  <textarea id="profileComments" placeholder="Paste real comments you wrote."></textarea>
+  <div class="collection-card">
+    <div class="label-row">
+      <label for="commentSelect">Comments (required)</label>
+    </div>
+    <div class="field-note">Use your own authentic writing. Best sources: LinkedIn comments, thoughtful Reddit replies, professional WhatsApp/Slack messages, email snippets, or notes you wrote yourself.</div>
+    <div class="field-note">Keep the style LinkedIn-appropriate: clear, respectful, practical, no slang-heavy or meme-only examples.</div>
+    <div class="row wrap">
+      <select id="commentSelect" class="select-inline"></select>
+      <button id="addComment" class="secondary tiny" type="button">Add comment</button>
+    </div>
+    <textarea id="commentText" placeholder="Paste one real comment you wrote."></textarea>
+  </div>
 
-  <label for="profilePosts">Your posts (optional)</label>
-  <textarea id="profilePosts" placeholder="Optional voice context."></textarea>
+  <div class="collection-card">
+    <div class="label-row">
+      <label for="postSelect">Posts (required)</label>
+    </div>
+    <div class="field-note">Add writing that reflects your authentic voice. Prefer LinkedIn posts, newsletters, personal essays, long-form captions, or thoughtful forum posts.</div>
+    <div class="field-note">Use examples close to professional tone so outputs fit LinkedIn without sounding robotic.</div>
+    <div class="row wrap">
+      <select id="postSelect" class="select-inline"></select>
+      <button id="addPost" class="secondary tiny" type="button">Add post</button>
+    </div>
+    <textarea id="postText" placeholder="Paste one real post you wrote."></textarea>
+  </div>
 
   <div class="row">
     <button id="save">Save settings</button>
+    <button id="rebuildStyle" class="secondary" type="button">Rebuild style profile</button>
     <div id="status"></div>
   </div>
 
